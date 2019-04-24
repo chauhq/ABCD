@@ -52,8 +52,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.PostView
         }
 
         public void bind(Post post) {
-            int size = itemView.getResources().getDimensionPixelSize(R.dimen.img_size_profile);
-            Glide.with(itemView.getContext()).load(post.getUrl()).override(size).centerCrop().into(imageView);
+            Glide.with(itemView.getContext()).load(post.getUrl()).centerCrop().into(imageView);
             tvPhone.setText("Phone number: " + post.getPhoneNumber());
             tvDes.setText(post.getDes());
         }

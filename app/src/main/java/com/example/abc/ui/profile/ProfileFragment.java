@@ -39,10 +39,11 @@ public class ProfileFragment extends Fragment {
     FirebaseDatabase database;
     ProgressDialog progressDialog;
     TextView tvUserName;
-    Button btnLogin;
+    TextView btnLogin;
 
     RecyclerView recyclerView;
     List<Post> posts = new ArrayList<>();
+    User user;
 
     @Nullable
     @Override
@@ -88,10 +89,11 @@ public class ProfileFragment extends Fragment {
         progressDialog.setMessage("Loading ...");
         progressDialog.setCanceledOnTouchOutside(false);
 
-        final User user = SharePrefUtil.getUserLogged(getActivity());
+        user = SharePrefUtil.getUserLogged(getActivity());
         if (user == null) {
             tvUserName.setText("No User");
             btnLogin.setText("LogIn");
+
         } else {
             tvUserName.setText(user.getName());
             btnLogin.setText("LogOut");
@@ -116,6 +118,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (user != null) {
+                    user = null;
                     SharePrefUtil.clearUser(getActivity());
                     tvUserName.setText("No User");
                     btnLogin.setText("LogIn");

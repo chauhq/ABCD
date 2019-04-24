@@ -44,6 +44,10 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (edtPhoneNumber.getText().toString().isEmpty() || edtPassword.getText().toString().isEmpty()) {
+                    Toast.makeText(LoginActivity.this, "Please fill all information", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 progressDialog.show();
                 database.getReference("users").child(edtPhoneNumber.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -56,6 +60,7 @@ public class LoginActivity extends AppCompatActivity {
                                     SharePrefUtil.setUser(getApplicationContext(), user);
                                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    intent.putExtra("index", 1);
                                     startActivity(intent);
                                 } else {
                                     progressDialog.dismiss();

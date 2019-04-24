@@ -5,12 +5,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.DrawerLayout;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,7 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -35,6 +37,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -47,6 +50,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.yayandroid.locationmanager.LocationManager;
+import com.yayandroid.locationmanager.configuration.DefaultProviderConfiguration;
+import com.yayandroid.locationmanager.configuration.GooglePlayServicesConfiguration;
+import com.yayandroid.locationmanager.configuration.LocationConfiguration;
+import com.yayandroid.locationmanager.configuration.PermissionConfiguration;
+import com.yayandroid.locationmanager.constants.ProviderType;
+import com.yayandroid.locationmanager.listener.LocationListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +68,6 @@ import retrofit2.Response;
 
 public class MainFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     private static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000;
-    private static int REQUEST_POST_SCREEN = 2000;
     private GoogleMap map;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private BottomSheetBehavior bottomSheetBehavior;
@@ -67,15 +76,14 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
     private LatLng myLatlng;
     private LatLng destinationLatlng;
     private TextView tvDirect;
-    private TextView tvLogin;
-    private TextView tvPost;
-    private TextView tvUserName;
     private ArrayList<LatLng> paths = new ArrayList<>();
     private Polyline polyline;
-    private DrawerLayout drawerLayout;
     List<Post> posts = new ArrayList<>();
     FirebaseDatabase database;
-    private GPSUtil gpsUtil;
+    LocationManager awesomeLocationManager;
+    private ProgressBar progressBar;
+    private ImageView imgPhone;
+    Post post;
 
     @Nullable
     @Override
@@ -92,31 +100,9 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
         imgLand = view.findViewById(R.id.imgLand);
         tvDes = view.findViewById(R.id.tvDes);
         tvDirect = view.findViewById(R.id.tvDirect);
-        drawerLayout = view.findViewById(R.id.drawerLayout);
-        tvLogin = view.findViewById(R.id.tvLogin);
-        tvPost = view.findViewById(R.id.tvPost);
-        tvUserName = view.findViewById(R.id.tvUserName);
-
-        gpsUtil = new GPSUtil(getActivity());
-        gpsUtil.setOnListener(new GPSUtil.TurnOnGPS() {
-            @Override
-            public void onChangeLocation(Location location) {
-                Log.d("xxxx", "onChangeLocation: " + location.toString());
-                myLatlng = new LatLng(location.getLatitude(), location.getLongitude());
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatlng, 15F));
-            }
-        });
-
+        imgPhone = view.findViewById(R.id.imgPhone);
+        progressBar = view.findViewById(R.id.progressBar);
         User user = SharePrefUtil.getUserLogged(getActivity());
-        if (user == null) {
-            tvLogin.setText("Login");
-            tvUserName.setText("No User");
-            tvPost.setVisibility(View.GONE);
-        } else {
-            tvLogin.setText("Logout");
-            tvUserName.setText(user.getName());
-            tvPost.setVisibility(View.VISIBLE);
-        }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
@@ -170,7 +156,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
                     }
 
                     for (int i = 0; i < posts.size(); i++) {
-                        map.addMarker(new MarkerOptions().position(new LatLng(posts.get(i).getLat(), posts.get(i).getLng()))).setTag(i);
+                        map.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_post)).position(new LatLng(posts.get(i).getLat(), posts.get(i).getLng()))).setTag(i);
                     }
                 }
             }
@@ -180,6 +166,62 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
 
             }
         });
+
+        LocationConfiguration awesomeConfiguration = new LocationConfiguration.Builder()
+                .keepTracking(false)
+                .useDefaultProviders(new DefaultProviderConfiguration.Builder()
+                        .requiredTimeInterval(5 * 60 * 1000)
+                        .requiredDistanceInterval(0)
+                        .acceptableAccuracy(5.0f)
+                        .acceptableTimePeriod(5 * 60 * 1000)
+                        .setWaitPeriod(ProviderType.GPS, 20 * 1000)
+                        .setWaitPeriod(ProviderType.NETWORK, 20 * 1000)
+                        .build())
+                .build();
+        awesomeLocationManager = new LocationManager.Builder(getActivity().getApplicationContext())
+                .activity(getActivity()) // Only required to ask permission and/or GoogleApi - SettingsApi
+                .configuration(awesomeConfiguration)
+                .notify(new LocationListener() {
+                    @Override
+                    public void onProcessTypeChanged(int processType) {
+
+                    }
+
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        Log.d("xxx", "onLocationChanged: ");
+                        Log.d("xxx", "onLocationChanged: " + location);
+                        myLatlng = new LatLng(location.getLatitude(), location.getLongitude());
+                        map.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_maker_user)).position(myLatlng)).setTag(-100);
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatlng, 15F));
+                    }
+
+                    @Override
+                    public void onLocationFailed(int type) {
+
+                    }
+
+                    @Override
+                    public void onPermissionGranted(boolean alreadyHadPermission) {
+
+                    }
+
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+
+                    }
+                })
+                .build();
 
     }
 
@@ -194,6 +236,11 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
         tvDirect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (myLatlng == null) {
+                    Toast.makeText(getActivity(), "Not found your location", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                progressBar.setVisibility(View.VISIBLE);
                 paths.clear();
                 if (polyline != null) {
                     polyline.remove();
@@ -224,45 +271,23 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
                                 map.getUiSettings().setZoomControlsEnabled(true);
 
                                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatlng, 15));
+                                progressBar.setVisibility(View.GONE);
                             }
 
                             @Override
                             public void onFailure(Call<DirectionApiResponse> call, Throwable t) {
-                                Log.d("xxx", "onFailure: ");
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(getActivity(), t.getMessage(), Toast.LENGTH_LONG).show();
                             }
                         });
             }
         });
 
-        tvLogin.setOnClickListener(new View.OnClickListener() {
+        imgPhone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SharePrefUtil.getUserLogged(getActivity()) != null) {
-                    SharePrefUtil.clearUser(getActivity());
-                    tvLogin.setText("Login");
-                    tvUserName.setText("No User");
-                    tvPost.setVisibility(View.GONE);
-                } else {
-                    Intent intent = new Intent(getActivity(), LoginActivity.class);
-                    startActivity(intent);
-                }
-            }
-        });
-
-        tvPost.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawerLayout.closeDrawers();
-                Intent intent = new Intent(getActivity(), PostActivity.class);
-                startActivityForResult(intent, REQUEST_POST_SCREEN);
-            }
-        });
-
-        tvUserName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawerLayout.closeDrawers();
-                Intent intent = new Intent(getActivity(), ProfileFragment.class);
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + post.getPhoneNumber()));
                 startActivity(intent);
             }
         });
@@ -283,8 +308,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
         map.getUiSettings().setMapToolbarEnabled(false);
         map.getUiSettings().setMyLocationButtonEnabled(false);
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Log.d("xxx", "onMapReady: ");
-            gpsUtil.getCurrentLocation();
+            awesomeLocationManager.get();
         } else {
             requestPermissions(
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -295,6 +319,10 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public boolean onMarkerClick(Marker marker) {
         int position = (int) (marker.getTag());
+        if (position == -100) {
+            return false;
+        }
+        post = posts.get(position);
         initDataFOrBottomSheet(posts.get(position));
         destinationLatlng = new LatLng(posts.get(position).getLat(), posts.get(position).getLng());
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -343,21 +371,8 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
             if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
-            gpsUtil.getCurrentLocation();
+            awesomeLocationManager.get();
         }
     }
 
-    /*@Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_POST_SCREEN && resultCode == Activity.RESULT_OK) {
-            Post post = data.getParcelableExtra(Post.class.getSimpleName());
-            Log.d("xxx", "onActivityResult: " + post.getLat() + ":" + post.getLng());
-            posts.add(post);
-            map.addMarker(new MarkerOptions().position(new LatLng(post.getLat(), post.getLng()))).setTag(posts.indexOf(post));
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(post.getLat(), post.getLng()), 15F));
-            initDataFOrBottomSheet(post);
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        }
-    }*/
 }

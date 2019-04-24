@@ -2,25 +2,27 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#26A2A2A2"
     android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/rlTitle"
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="50dp"
+        android:background="@color/colorAccent">
 
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@color/colorAccent"
-            android:gravity="center"
+            android:layout_marginLeft="15dp"
+            android:gravity="center_vertical"
             android:text="Post"
             android:textColor="@android:color/black"
             android:textSize="18dp" />
 
         <LinearLayout
-            android:layout_width="100dp"
+            android:layout_width="150dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:layout_marginTop="10dp"
@@ -30,7 +32,7 @@
 
             <android.support.v7.widget.AppCompatSpinner
                 android:id="@+id/spnState"
-                android:layout_width="100dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </LinearLayout>
     </RelativeLayout>
@@ -39,7 +41,8 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/rlTitle" />
+        android:layout_below="@+id/rlTitle"
+        android:padding="10dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabPost"

@@ -47,6 +47,10 @@ public class SigupActivity extends AppCompatActivity {
         btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (edtNumberPhone.getText().toString().isEmpty() || edtPassword.getText().toString().isEmpty() || edtConfirmPassword.getText().toString().isEmpty() || edtUserName.getText().toString().isEmpty()) {
+                    Toast.makeText(SigupActivity.this, "Please fill all information", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 progressDialog.show();
                 database.getReference("users").child(edtNumberPhone.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override

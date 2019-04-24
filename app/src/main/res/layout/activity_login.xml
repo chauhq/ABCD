@@ -26,7 +26,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1.5"
-            android:gravity="center"
+            android:padding="10dp"
+            android:gravity="center_vertical"
             android:text="Phone number"
             android:textColor="@android:color/black" />
 
@@ -52,8 +53,9 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1.5"
-            android:gravity="center"
-            android:text="Pass word"
+            android:text="Password"
+            android:padding="10dp"
+            android:gravity="center_vertical"
             android:textColor="@android:color/black" />
 
         <EditText

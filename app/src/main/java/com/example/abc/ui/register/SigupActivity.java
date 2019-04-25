@@ -1,4 +1,4 @@
-package com.example.abc;
+package com.example.abc.ui.register;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.abc.HomeActivity;
+import com.example.abc.R;
 import com.example.abc.model.User;
 import com.example.abc.ui.profile.SharePrefUtil;
 import com.google.firebase.database.DataSnapshot;

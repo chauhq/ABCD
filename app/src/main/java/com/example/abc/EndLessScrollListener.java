@@ -31,4 +31,9 @@ public abstract class EndLessScrollListener extends RecyclerView.OnScrollListene
             mIsLoading = true;
         }
     }
+
+    public void resetData() {
+        mPreviousTotal = 0;
+        mIsLoading = true;
+    }
 }

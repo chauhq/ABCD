@@ -11,19 +11,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.abc.LoginActivity;
-import com.example.abc.PostActivity;
+import com.example.abc.ui.register.LoginActivity;
+import com.example.abc.CreatePostActivity;
 import com.example.abc.R;
-import com.example.abc.SigupActivity;
 import com.example.abc.model.Post;
 import com.example.abc.model.User;
-import com.example.abc.ui.post.PostAdapter;
-import com.example.abc.ui.profile.ProfileAdapter;
-import com.example.abc.ui.profile.SharePrefUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -79,7 +74,7 @@ public class ProfileFragment extends Fragment {
 
             @Override
             public void editPost(Post post) {
-                Intent intent = new Intent(getActivity(), PostActivity.class);
+                Intent intent = new Intent(getActivity(), CreatePostActivity.class);
                 intent.putExtra(Post.class.getSimpleName(), post);
                 startActivity(intent);
             }

@@ -26,14 +26,14 @@
         </activity>
 
         <activity
-            android:name=".SigupActivity"
+            android:name=".ui.register.SigupActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.register.LoginActivity"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".PostActivity"
+            android:name=".CreatePostActivity"
             android:screenOrientation="portrait" />
 
         <meta-data

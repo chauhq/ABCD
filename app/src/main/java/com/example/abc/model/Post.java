@@ -16,13 +16,12 @@ public class Post implements Parcelable {
     private String create;
     private Double price;
     private String userId;
-    private long timestamp;
 
     public Post() {
 
     }
 
-    public Post(long id, String phoneNumber, String des, String url, double lat, double lng, String state, String create, Double price, String userId, long timestamp) {
+    public Post(long id, String phoneNumber, String des, String url, double lat, double lng, String state, String create, Double price, String userId) {
         this.id = id;
         this.phoneNumber = phoneNumber;
         this.des = des;
@@ -33,7 +32,6 @@ public class Post implements Parcelable {
         this.create = create;
         this.price = price;
         this.userId = userId;
-        this.timestamp = timestamp;
     }
 
 
@@ -48,7 +46,6 @@ public class Post implements Parcelable {
         create = in.readString();
         price = in.readDouble();
         userId = in.readString();
-        timestamp = in.readLong();
     }
 
     @Override
@@ -63,7 +60,6 @@ public class Post implements Parcelable {
         dest.writeString(create);
         dest.writeDouble(price);
         dest.writeString(userId);
-        dest.writeLong(timestamp);
     }
 
     public static final Creator<Post> CREATOR = new Creator<Post>() {
@@ -157,14 +153,6 @@ public class Post implements Parcelable {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
     }
 
     @Override

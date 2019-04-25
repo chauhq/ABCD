@@ -3,10 +3,7 @@ package com.example.abc;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.location.Address;
-import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -24,10 +21,13 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.abc.model.GeoResponse;
 import com.example.abc.model.Post;
 import com.example.abc.model.State;
 import com.example.abc.model.User;
+import com.example.abc.service.ABCApi;
 import com.example.abc.ui.profile.SharePrefUtil;
+import com.example.abc.ui.register.LoginActivity;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -53,15 +53,17 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class PostActivity extends AppCompatActivity implements OnMapReadyCallback {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class CreatePostActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final int GALLEY_RESULT_CODE = 1993;
     RelativeLayout rlPick;
     ImageView imageView;
@@ -133,14 +135,31 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                     return;
                 }
 
-                for (AddressComponent addressComponent : place.getAddressComponents().asList()) {
-                    for (String type : addressComponent.getTypes()) {
-                        if (type.equals("administrative_area_level_1")) {
-                            state = addressComponent.getName().toLowerCase();
+                ABCApi.getInstance()
+                        .googleService().getGeoResponse(String.valueOf(place.getLatLng().latitude) + "," + String.valueOf(place.getLatLng().longitude), false, getString(R.string.ma_api)).enqueue(new Callback<GeoResponse>() {
+                    @Override
+                    public void onResponse(Call<GeoResponse> call, Response<GeoResponse> response) {
+                        List<GeoResponse.MyPlace> places = response.body().getResults();
+                        for (GeoResponse.MyPlace place : places) {
+                            for (GeoResponse.AddressComponents addressComponent : place.getAddress_components()) {
+                                for (String type : addressComponent.getTypes()) {
+                                    if (type.equals("administrative_area_level_1")) {
+                                        state = addressComponent.getShort_name().toLowerCase();
+                                        return;
+                                    }
+                                }
+
+                            }
                         }
                     }
 
-                }
+                    @Override
+                    public void onFailure(Call<GeoResponse> call, Throwable t) {
+                        Log.d("xxx", "onFailure: ");
+
+                    }
+                });
+
                 latLng = place.getLatLng();
                 map.addMarker(new MarkerOptions().position(place.getLatLng()));
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 15F));
@@ -169,6 +188,10 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (post == null && latLng == null && edtPhoneNumber.getText().toString().isEmpty() && edtDes.getText().toString().isEmpty() && edtPrice.getText().toString().isEmpty() && uri == null) {
+                    Toast.makeText(CreatePostActivity.this, "Please fill all information", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 progressDialog.show();
                 if (post == null) {
                     Bitmap bitmap = null;
@@ -190,7 +213,7 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                         @Override
                         public void onFailure(@NonNull Exception exception) {
                             progressDialog.dismiss();
-                            Toast.makeText(PostActivity.this, exception.getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(CreatePostActivity.this, exception.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -198,12 +221,13 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                             imageRef.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Uri> task) {
-                                    Calendar calendar = Calendar.getInstance(Locale.US);
+                                    Calendar calendar = Calendar.getInstance(Locale.getDefault());
                                     calendar.getTime();
                                     SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
-                                    User user = SharePrefUtil.getUserLogged(PostActivity.this);
+                                    User user = SharePrefUtil.getUserLogged(CreatePostActivity.this);
                                     long timeStamp = calendar.getTimeInMillis();
-                                    final Post post = new Post(System.currentTimeMillis(), edtPhoneNumber.getText().toString(), edtDes.getText().toString(), task.getResult().toString(), latLng.latitude, latLng.longitude, state, formatter.format(calendar.getTime()), Double.valueOf(edtPrice.getText().toString()), user.getMyPhone(), -1 * timeStamp);
+                                    Long a = new Long(timeStamp);
+                                    final Post post = new Post(-1 * a.intValue(), edtPhoneNumber.getText().toString(), edtDes.getText().toString(), task.getResult().toString(), latLng.latitude, latLng.longitude, state, formatter.format(calendar.getTime()), Double.valueOf(edtPrice.getText().toString()), user.getMyPhone());
 
                                     DatabaseReference ref = database.getReference("posts").child(String.valueOf(post.getId()));
                                     ref.setValue(post, new DatabaseReference.CompletionListener() {
@@ -212,27 +236,36 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                             progressDialog.dismiss();
                                             if (databaseError == null) {
-                                                Intent intent = new Intent(PostActivity.this, HomeActivity.class);
-                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                intent.putExtra("index", 1);
-                                                startActivity(intent);
                                                 database.getReference("city").child(state).addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                                         if (!dataSnapshot.exists()) {
-                                                            database.getReference("city").child(state).setValue(new State((state)));
+                                                            database.getReference("city").child(state).setValue(new State((state))).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                    Intent intent = new Intent(CreatePostActivity.this, HomeActivity.class);
+                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                                    intent.putExtra("index", 1);
+                                                                    startActivity(intent);
+                                                                }
+                                                            });
+                                                        }else {
+                                                            Intent intent = new Intent(CreatePostActivity.this, HomeActivity.class);
+                                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                            intent.putExtra("index", 1);
+                                                            startActivity(intent);
                                                         }
                                                     }
 
                                                     @Override
                                                     public void onCancelled(@NonNull DatabaseError databaseError) {
                                                         progressDialog.dismiss();
-                                                        Toast.makeText(PostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                                                        Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
                                                     }
                                                 });
                                             } else {
                                                 progressDialog.dismiss();
-                                                Toast.makeText(PostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                                                Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
                                             }
                                         }
                                     });
@@ -242,9 +275,8 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     });
                 } else {
-                    final Post postStamp = new Post(post.getId(), edtPhoneNumber.getText().toString(), edtDes.getText().toString(), post.getUrl(), latLng.latitude, latLng.longitude, state, post.getCreate(), Double.valueOf(edtPrice.getText().toString()), post.getUserId(), post.getTimestamp());
+                    final Post postStamp = new Post(post.getId(), edtPhoneNumber.getText().toString(), edtDes.getText().toString(), post.getUrl(), latLng.latitude, latLng.longitude, state, post.getCreate(), Double.valueOf(edtPrice.getText().toString()), post.getUserId());
                     if (postStamp.getUrl().substring(0, 4).equals("http")) {
-                        Log.d("xxxxx", "onClick: " + postStamp.getId());
                         DatabaseReference ref = database.getReference("posts").child(String.valueOf(postStamp.getId()));
                         ref.setValue(postStamp, new DatabaseReference.CompletionListener() {
 
@@ -252,7 +284,7 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                             public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                 progressDialog.dismiss();
                                 if (databaseError == null) {
-                                    Intent intent = new Intent(PostActivity.this, HomeActivity.class);
+                                    Intent intent = new Intent(CreatePostActivity.this, HomeActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     intent.putExtra("index", 1);
                                     startActivity(intent);
@@ -266,12 +298,14 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                         @Override
                                         public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            progressDialog.dismiss();
+                                            Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
 
                                         }
                                     });
                                 } else {
                                     progressDialog.dismiss();
-                                    Toast.makeText(PostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
                                 }
                             }
                         });
@@ -295,7 +329,7 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void onFailure(@NonNull Exception exception) {
                                 progressDialog.dismiss();
-                                Toast.makeText(PostActivity.this, exception.getMessage(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(CreatePostActivity.this, exception.getMessage(), Toast.LENGTH_LONG).show();
                             }
                         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
@@ -311,7 +345,7 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
                                             public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                                 progressDialog.dismiss();
                                                 if (databaseError == null) {
-                                                    Intent intent = new Intent(PostActivity.this, HomeActivity.class);
+                                                    Intent intent = new Intent(CreatePostActivity.this, HomeActivity.class);
                                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                                     intent.putExtra("index", 1);
                                                     startActivity(intent);
@@ -325,12 +359,14 @@ public class PostActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                                         @Override
                                                         public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                            progressDialog.dismiss();
+                                                            Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
 
                                                         }
                                                     });
                                                 } else {
                                                     progressDialog.dismiss();
-                                                    Toast.makeText(PostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                                                    Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
                                                 }
                                             }
                                         });

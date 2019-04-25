@@ -17,15 +17,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
+import com.example.abc.CreatePostActivity;
 import com.example.abc.EndLessScrollListener;
-import com.example.abc.LoadMoreListener;
-import com.example.abc.LoginActivity;
-import com.example.abc.PostActivity;
 import com.example.abc.R;
 import com.example.abc.model.State;
 import com.example.abc.ui.profile.SharePrefUtil;
 import com.example.abc.model.Post;
 import com.example.abc.model.User;
+import com.example.abc.ui.register.LoginActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -46,6 +45,7 @@ public class PostFragment extends Fragment {
     private List<String> states = new ArrayList<>();
     private String state = "";
     private boolean isFirst = true;
+    private EndLessScrollListener endLessScrollListener;
 
     @Nullable
     @Override
@@ -90,13 +90,12 @@ public class PostFragment extends Fragment {
         progressDialog.setCanceledOnTouchOutside(false);
 
         progressDialog.show();
-        database.getReference("posts").orderByChild("timestamp").limitToLast(10).addListenerForSingleValueEvent(new ValueEventListener() {
+        database.getReference("posts").orderByKey().limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d("xxx", "onDataChange: 1");
                 progressDialog.dismiss();
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    Log.d("xxx", "onDataChange: ");
+                    Log.d("xx", "onDataChange: " + child.getValue(Post.class).getId());
                     posts.add(child.getValue(Post.class));
                 }
                 if (!posts.isEmpty()) {
@@ -121,7 +120,7 @@ public class PostFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), LoginActivity.class);
                     startActivity(intent);
                 } else {
-                    Intent intent = new Intent(getActivity(), PostActivity.class);
+                    Intent intent = new Intent(getActivity(), CreatePostActivity.class);
                     startActivity(intent);
                 }
             }
@@ -134,12 +133,33 @@ public class PostFragment extends Fragment {
                     isFirst = false;
                     return;
                 }
+                posts.clear();
                 progressDialog.show();
                 if (position == 0) {
+                    endLessScrollListener.resetData();
                     state = "";
-                    queryPost();
+                    database.getReference("posts").orderByKey().limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            progressDialog.dismiss();
+                            for (DataSnapshot child : dataSnapshot.getChildren()) {
+                                Log.d("xx", "onDataChange: " + child.getValue(Post.class).getId());
+                                posts.add(child.getValue(Post.class));
+                            }
+                            if (!posts.isEmpty()) {
+                                oldestId = String.valueOf(posts.get(posts.size() - 1).getId());
+                            }
+                            recyclerView.getAdapter().notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 } else {
                     state = states.get(position);
+                    Log.d("xxxx", "onItemSelected: " + state);
                     queryPostByKey();
                 }
             }
@@ -150,24 +170,31 @@ public class PostFragment extends Fragment {
             }
         });
 
-        recyclerView.addOnScrollListener(new EndLessScrollListener() {
+        endLessScrollListener = new EndLessScrollListener() {
             @Override
             public void seeMore() {
+                Log.d("xxx", "seeMore: " + state);
                 if (state.isEmpty()) {
+                    if (posts.size() < 10) {
+                        return;
+                    }
                     queryPost();
                 }
             }
-        });
+        };
+
+        recyclerView.addOnScrollListener(endLessScrollListener);
     }
 
 
     private void queryPostByKey() {
-        database.getReference("posts").orderByChild("state").equalTo(state).addListenerForSingleValueEvent(new ValueEventListener() {
+        database.getReference("posts").orderByChild("state").equalTo(state).limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 posts.clear();
                 progressDialog.dismiss();
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    Log.d("xx", "onDataChange: " + child.getValue(Post.class).getId());
                     posts.add(child.getValue(Post.class));
                 }
                 if (!posts.isEmpty()) {
@@ -189,15 +216,17 @@ public class PostFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 progressDialog.dismiss();
-                for (DataSnapshot childChild : dataSnapshot.getChildren()) {
-                    if (oldestId.equals(String.valueOf(childChild.getValue(Post.class).getId()))) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    if (oldestId.equals(String.valueOf(child.getValue(Post.class).getId()))) {
                         oldestId = "0";
                     } else {
-                        Log.d("xx", "onDataChange: " + childChild.getValue(Post.class).getId());
-                        posts.add(childChild.getValue(Post.class));
+                        Log.d("xx", "onDataChange: " + child.getValue(Post.class).getId());
+                        posts.add(child.getValue(Post.class));
                     }
                 }
-                oldestId = String.valueOf(posts.get(posts.size() - 1).getId());
+                if (!posts.isEmpty()) {
+                    oldestId = String.valueOf(posts.get(posts.size() - 1).getId());
+                }
                 recyclerView.getAdapter().notifyDataSetChanged();
             }
 

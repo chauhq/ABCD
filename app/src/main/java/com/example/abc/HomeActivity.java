@@ -44,7 +44,7 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int position) {
             if (position == 0) {
-                return new MainFragment();
+                return new MapFragment();
             } else if (position == 1) {
                 return new PostFragment();
             } else {
@@ -56,17 +56,5 @@ public class HomeActivity extends AppCompatActivity {
         public int getCount() {
             return 3;
         }
-
-       /* @Nullable
-        @Override
-        public CharSequence getPageTitle(int position) {
-            if (position == 0) {
-                return "map";
-            } else if (position == 1) {
-                return "post";
-            } else {
-                return "profile";
-            }
-        }*/
     }
 }

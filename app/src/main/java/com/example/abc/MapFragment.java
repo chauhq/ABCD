@@ -30,6 +30,7 @@ import com.example.abc.model.User;
 import com.example.abc.service.ABCApi;
 import com.example.abc.ui.profile.ProfileFragment;
 import com.example.abc.ui.profile.SharePrefUtil;
+import com.example.abc.ui.register.LoginActivity;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -66,7 +67,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     private static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1000;
     private GoogleMap map;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -141,7 +142,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback, Google
 
             @Override
             public void onError(@NonNull Status status) {
-                Log.d("xxx", "onError: " + status.getStatusMessage());
+                Toast.makeText(getActivity(), status.getStatusMessage(), Toast.LENGTH_LONG).show();
 
             }
         });

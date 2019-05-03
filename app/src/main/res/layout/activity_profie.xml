@@ -36,6 +36,15 @@
             android:background="@drawable/bg_break_line"
             android:gravity="center" />
 
+        <TextView
+            android:id="@+id/btnAcc"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/bg_break_line"
+            android:gravity="center" />
+
         <android.support.v7.widget.RecyclerView
             android:background="#26A2A2A2"
             android:id="@+id/recyclerView"

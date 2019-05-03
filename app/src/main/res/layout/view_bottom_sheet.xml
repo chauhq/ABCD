@@ -33,6 +33,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="10dp"
+            android:ellipsize="end"
+            android:singleLine="true"
             android:textColor="@android:color/black"
             android:textSize="18dp" />
     </LinearLayout>
@@ -48,7 +50,7 @@
             android:layout_width="100dp"
             android:layout_height="match_parent"
             android:background="@drawable/bg_rect"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:padding="10dp"
             android:text="Chỉ đường"
             android:textColor="@android:color/black"
@@ -63,6 +65,18 @@
             android:padding="10dp"
             android:src="@drawable/icon_phone"
             android:text="Chỉ đường"
+            android:textColor="@android:color/black"
+            android:textSize="14dp" />
+
+        <TextView
+            android:id="@+id/tvDetail"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/bg_rect"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="Detail"
             android:textColor="@android:color/black"
             android:textSize="14dp" />
     </LinearLayout>

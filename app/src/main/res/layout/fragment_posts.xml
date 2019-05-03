@@ -13,6 +13,7 @@
 
 
         <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginLeft="15dp"
@@ -22,6 +23,7 @@
             android:textSize="18dp" />
 
         <LinearLayout
+            android:id="@+id/llSpinner"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"

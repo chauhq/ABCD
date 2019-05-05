@@ -5,13 +5,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +31,8 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.team.abc.MapFragment;
+import com.team.abc.ui.post.PostFragment;
 import com.team.abc.ui.register.LoginActivity;
 import com.team.abc.CreatePostActivity;
 import com.team.abc.R;
@@ -43,13 +53,16 @@ public class ProfileFragment extends Fragment {
     FirebaseDatabase database;
     ProgressDialog progressDialog;
     TextView tvUserName;
-    TextView btnLogin;
-    TextView btnAcc;
+    TextView tvLogin;
+    TextView tvAcc;
     BillingClient billingClient;
+    DrawerLayout drawerLayout;
+    ImageView imgMenu;
 
-    RecyclerView recyclerView;
+    ViewPager viewPager;
     List<Post> posts = new ArrayList<>();
     User user;
+    TabLayout tabLayout;
 
     @Nullable
     @Override
@@ -58,52 +71,39 @@ public class ProfileFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         database = FirebaseDatabase.getInstance();
 
         tvUserName = view.findViewById(R.id.tvUserName);
-        btnLogin = view.findViewById(R.id.btnLogin);
-        btnAcc = view.findViewById(R.id.btnAcc);
-        recyclerView = view.findViewById(R.id.recyclerView);
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(new ProfilePostAdapter(posts, getActivity(), new OnPostListener() {
-            @Override
-            public void deletePost(final Post post) {
-                database.getReference("posts").child(String.valueOf(post.getId())).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            posts.remove(post);
-                            recyclerView.getAdapter().notifyDataSetChanged();
-                        } else {
-                            Toast.makeText(getActivity(), task.getException().toString(), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void editPost(Post post) {
-                Intent intent = new Intent(getActivity(), CreatePostActivity.class);
-                intent.putExtra(Post.class.getSimpleName(), post);
-                startActivity(intent);
-            }
-        }));
+        tvLogin = view.findViewById(R.id.tvLogin);
+        tvAcc = view.findViewById(R.id.tvAcc);
+        viewPager = view.findViewById(R.id.viewPager);
+        drawerLayout = view.findViewById(R.id.drawerLayout);
+        imgMenu = view.findViewById(R.id.imgMenu);
+        tabLayout = view.findViewById(R.id.tabLayout);
 
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("Loading ...");
         progressDialog.setCanceledOnTouchOutside(false);
 
+        viewPager.setAdapter(new ProfileFragmentPager(getChildFragmentManager()));
+        tabLayout.setupWithViewPager(viewPager);
+
         user = SharePrefUtil.getUserLogged(getActivity());
         if (user == null) {
             tvUserName.setText("No User");
-            btnLogin.setText("LogIn");
-
+            tvLogin.setText("LogIn");
+            tvAcc.setVisibility(View.GONE);
         } else {
             tvUserName.setText(user.getName());
-            btnLogin.setText("LogOut");
+            tvLogin.setText("LogOut");
+            if (user.isAccVip()) {
+                tvAcc.setVisibility(View.GONE);
+
+            } else {
+                tvAcc.setVisibility(View.VISIBLE);
+            }
 
             database.getReference("posts").orderByChild("userId").equalTo(user.getMyPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -111,7 +111,7 @@ public class ProfileFragment extends Fragment {
                     for (DataSnapshot childChild : dataSnapshot.getChildren()) {
                         posts.add(childChild.getValue(Post.class));
                     }
-                    recyclerView.getAdapter().notifyDataSetChanged();
+                    //recyclerView.getAdapter().notifyDataSetChanged();
                 }
 
                 @Override
@@ -121,16 +121,36 @@ public class ProfileFragment extends Fragment {
             });
         }
 
-        btnLogin.setOnClickListener(new View.OnClickListener() {
+
+        imgMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawers();
+                } else {
+                    drawerLayout.openDrawer(Gravity.START);
+                }
+            }
+        });
+
+        tvLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.closeDrawers();
                 if (user != null) {
                     user = null;
                     SharePrefUtil.clearUser(getActivity());
                     tvUserName.setText("No User");
-                    btnLogin.setText("LogIn");
-                    posts.clear();
-                    recyclerView.getAdapter().notifyDataSetChanged();
+                    tvLogin.setText("LogIn");
+                    for (int i = 0; i < viewPager.getAdapter().getCount(); i++) {
+                        Fragment fragment = (Fragment) viewPager.getAdapter().instantiateItem(viewPager, i);
+                        if (fragment instanceof NormalPostFragment) {
+                            ((NormalPostFragment) fragment).clearData();
+                        }
+                        if (fragment instanceof VipPostFragment) {
+                            ((VipPostFragment) fragment).clearData();
+                        }
+                    }
                 } else {
                     Intent intent = new Intent(getActivity(), LoginActivity.class);
                     startActivity(intent);
@@ -138,15 +158,15 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        btnAcc.setOnClickListener(new View.OnClickListener() {
+        tvAcc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                drawerLayout.closeDrawers();
                 progressDialog.show();
                 billingClient.startConnection(new BillingClientStateListener() {
                     @Override
                     public void onBillingSetupFinished(@BillingClient.BillingResponse int billingResponseCode) {
                         if (billingResponseCode == BillingClient.BillingResponse.OK) {
-                            // The BillingClient is ready. You can query purchases here.
                             List<String> skuList = new ArrayList<>();
                             // skuList.add("abcd1");
                             // test
@@ -187,9 +207,15 @@ public class ProfileFragment extends Fragment {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                            } else {
+                                tvAcc.setVisibility(View.GONE);
+                                for (int i = 0; i < viewPager.getAdapter().getCount(); i++) {
+                                    Fragment fragment = (Fragment) viewPager.getAdapter().instantiateItem(viewPager, i);
+                                    if (fragment instanceof VipPostFragment) {
+                                        ((VipPostFragment) fragment).getData();
+                                        return;
+                                    }
+                                }
                             }
-
                         }
                     });
                 } else if (responseCode == BillingClient.BillingResponse.USER_CANCELED) {
@@ -202,4 +228,30 @@ public class ProfileFragment extends Fragment {
         }).build();
     }
 
+    static class ProfileFragmentPager extends FragmentStatePagerAdapter {
+
+        public ProfileFragmentPager(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            if (position == 0) {
+                return new NormalPostFragment();
+            } else {
+                return new VipPostFragment();
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Nullable
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return (position == 0) ? "Normal Post" : "Featured Post";
+        }
+    }
 }

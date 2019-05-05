@@ -29,7 +29,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
         viewPager.setAdapter(new HomeFragmentPager(getSupportFragmentManager(), SharePrefUtil.getUserLogged(this)));
-        viewPager.setOffscreenPageLimit(2);
+        viewPager.setOffscreenPageLimit(3);
         viewPager.setCurrentItem(getIntent().getIntExtra("index", 0));
         tabLayout.setupWithViewPager(viewPager);
         for (int i = 0; i < tabLayout.getTabCount(); i++) {

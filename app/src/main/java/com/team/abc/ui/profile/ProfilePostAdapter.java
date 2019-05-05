@@ -89,7 +89,7 @@ public class ProfilePostAdapter extends RecyclerView.Adapter<ProfilePostAdapter.
         }
 
         public void bind(final Post post) {
-            Glide.with(itemView.getContext()).load(post.getUrl()).override(width, height).centerCrop().into(imageView);
+            Glide.with(itemView.getContext()).load(post.getUrl()).centerCrop().into(imageView);
             tvDes.setText(post.getDes());
             tvAddress.setText("State: " + post.getState());
             tvPhoneNumber.setText("Phone: " + post.getPhoneNumber());

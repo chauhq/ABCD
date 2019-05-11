@@ -142,7 +142,7 @@ public class PostFragment extends Fragment {
         fabPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (user == null) {
+                if (SharePrefUtil.getUserLogged(getActivity()) == null) {
                     Intent intent = new Intent(getActivity(), LoginActivity.class);
                     startActivity(intent);
                 } else {

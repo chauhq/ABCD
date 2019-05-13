@@ -1,11 +1,13 @@
 package com.team.abc.ui.post;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
@@ -66,22 +68,31 @@ public class DetailPostActivity extends AppCompatActivity implements OnMapReadyC
         database.getReference("posts").child(getIntent().getStringExtra(POST_ID)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                post = dataSnapshot.getValue(Post.class);
-                Glide.with(DetailPostActivity.this).load(post.getUrl()).centerCrop().into(imageView);
-                tvDes.setText(post.getDes());
-                tvAddress.setText("State: " + post.getState());
-                DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
-                tvPrice.setText("Price: " + formatter.format(post.getPrice()) + "vnđ");
-                tvCreate.setText(post.getCreate());
-                imgPhone.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(Intent.ACTION_DIAL);
-                        intent.setData(Uri.parse("tel:" + post.getPhoneNumber()));
-                        startActivity(intent);
-                    }
-                });
-                mapView.getMapAsync(DetailPostActivity.this);
+                if (dataSnapshot.getValue() == null) {
+                    new AlertDialog.Builder(DetailPostActivity.this).setMessage("The post deleted").setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    }).show().setCanceledOnTouchOutside(false);
+                } else {
+                    post = dataSnapshot.getValue(Post.class);
+                    Glide.with(DetailPostActivity.this).load(post.getUrl()).centerCrop().into(imageView);
+                    tvDes.setText(post.getDes());
+                    tvAddress.setText("State: " + post.getState());
+                    DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+                    tvPrice.setText("Price: " + formatter.format(post.getPrice()) + "vnđ");
+                    tvCreate.setText(post.getCreate());
+                    imgPhone.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(Intent.ACTION_DIAL);
+                            intent.setData(Uri.parse("tel:" + post.getPhoneNumber()));
+                            startActivity(intent);
+                        }
+                    });
+                    mapView.getMapAsync(DetailPostActivity.this);
+                }
             }
 
             @Override

@@ -186,11 +186,6 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
         btnPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (post == null && latLng == null && edtPhoneNumber.getText().toString().isEmpty() && edtDes.getText().toString().isEmpty() && edtPrice.getText().toString().isEmpty() && uri == null) {
-                    Toast.makeText(CreatePostActivity.this, "Please fill all information", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                progressDialog.show();
                 final User user = SharePrefUtil.getUserLogged(CreatePostActivity.this);
                 final String nodeName;
                 if (user.isAccVip()) {
@@ -199,6 +194,11 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
                     nodeName = "posts";
                 }
                 if (post == null) {
+                    if (latLng == null || edtPhoneNumber.getText().toString().isEmpty() || edtDes.getText().toString().isEmpty() || edtPrice.getText().toString().isEmpty() || uri == null) {
+                        Toast.makeText(CreatePostActivity.this, "Please fill all information", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    progressDialog.show();
                     Bitmap bitmap = null;
                     try {
                         bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);

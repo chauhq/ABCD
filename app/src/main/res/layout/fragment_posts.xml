@@ -22,9 +22,9 @@
             android:textColor="@android:color/black"
             android:textSize="18dp" />
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/llSpinner"
-            android:layout_width="150dp"
+            android:layout_width="190dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
             android:layout_marginTop="10dp"
@@ -32,11 +32,37 @@
             android:layout_marginBottom="10dp"
             android:background="@android:color/white">
 
-            <android.support.v7.widget.AppCompatSpinner
-                android:id="@+id/spnState"
+
+            <fragment
+                android:id="@+id/placeAutocompleteFragment"
+                android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+                android:layout_width="200dp"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@id/imgDelete" />
+
+            <TextView
+                android:id="@+id/tvSearch"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@id/imgDelete"
+                android:background="@android:color/white"
+                android:drawableLeft="@drawable/ic_search_black"
+                android:drawablePadding="10dp"
+                android:gravity="center_vertical"
+                android:paddingLeft="5dp"
+                android:text="All"
+                android:textColor="@android:color/black"
+                android:textSize="14dp" />
+
+            <ImageView
+                android:id="@+id/imgDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_delete" />
+        </RelativeLayout>
     </RelativeLayout>
 
     <android.support.v7.widget.RecyclerView

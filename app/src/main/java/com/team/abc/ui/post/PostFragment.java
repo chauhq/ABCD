@@ -16,13 +16,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.team.abc.CreatePostActivity;
 import com.team.abc.EndLessScrollListener;
 import com.team.abc.R;
+import com.team.abc.model.GeoResponse;
 import com.team.abc.model.State;
+import com.team.abc.service.ABCApi;
 import com.team.abc.ui.profile.SharePrefUtil;
 import com.team.abc.model.Post;
 import com.team.abc.model.User;
@@ -33,7 +43,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PostFragment extends Fragment {
     private static final String IS_ACC_VIP = "is_acc_vip";
@@ -44,14 +59,14 @@ public class PostFragment extends Fragment {
     private FloatingActionButton fabPost;
     private User user;
     private String oldestId = "0";
-    private AppCompatSpinner spnState;
     private List<String> states = new ArrayList<>();
     private String state = "";
-    private boolean isFirst = true;
     private EndLessScrollListener endLessScrollListener;
     String nodeName;
-    private LinearLayout llSpinner;
+    private RelativeLayout llSpinner;
     private TextView tvTitle;
+    private TextView tvSearch;
+    private ImageView imgDelete;
 
     public static PostFragment newInstance(boolean isAdmin) {
         Bundle bundle = new Bundle();
@@ -72,14 +87,16 @@ public class PostFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         recyclerView = view.findViewById(R.id.recyclerView);
         fabPost = view.findViewById(R.id.fabPost);
-        spnState = view.findViewById(R.id.spnState);
         llSpinner = view.findViewById(R.id.llSpinner);
         tvTitle = view.findViewById(R.id.tvTitle);
         database = FirebaseDatabase.getInstance();
+        tvSearch = view.findViewById(R.id.tvSearch);
+        imgDelete = view.findViewById(R.id.imgDelete);
 
 
         if (getArguments().getBoolean(IS_ACC_VIP)) {
             nodeName = "suggestion";
+            tvSearch.setText("");
             tvTitle.setText("Post Suggestion");
             llSpinner.setVisibility(View.GONE);
             fabPost.hide();
@@ -88,25 +105,6 @@ public class PostFragment extends Fragment {
         }
         user = SharePrefUtil.getUserLogged(getActivity());
         initListener();
-
-        database.getReference("city").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    states.add(child.getValue(State.class).getCity());
-                }
-
-                states.add(0, "all");
-                ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, states);
-                dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spnState.setAdapter(dataAdapter);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(new PostAdapter(posts, getActivity()));
@@ -135,6 +133,52 @@ public class PostFragment extends Fragment {
 
             }
         });
+
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getChildFragmentManager().findFragmentById(R.id.placeAutocompleteFragment);
+
+        autocompleteFragment.setPlaceFields(Arrays.asList(com.google.android.libraries.places.api.model.Place.Field.ID, com.google.android.libraries.places.api.model.Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.ADDRESS_COMPONENTS));
+        autocompleteFragment.setOnPlaceSelectedListener(new com.google.android.libraries.places.widget.listener.PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull com.google.android.libraries.places.api.model.Place place) {
+                if (place.getLatLng() == null) {
+                    return;
+                }
+
+                ABCApi.getInstance().googleService().getGeoResponse(String.valueOf(place.getLatLng().latitude) + "," + String.valueOf(place.getLatLng().longitude), false, getString(R.string.ma_api)).enqueue(new Callback<GeoResponse>() {
+                    @Override
+                    public void onResponse(Call<GeoResponse> call, Response<GeoResponse> response) {
+                        List<GeoResponse.MyPlace> places = response.body().getResults();
+                        for (GeoResponse.MyPlace place : places) {
+                            for (GeoResponse.AddressComponents addressComponent : place.getAddress_components()) {
+                                for (String type : addressComponent.getTypes()) {
+                                    if (type.equals("administrative_area_level_1")) {
+                                        posts.clear();
+                                        state = addressComponent.getShort_name().toLowerCase();
+                                        tvSearch.setText(state);
+                                        progressDialog.show();
+                                        queryPostByKey();
+                                        return;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<GeoResponse> call, Throwable t) {
+                        Log.d("xxx", "onFailure: ");
+
+                    }
+                });
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+
+            }
+        });
     }
 
 
@@ -152,50 +196,6 @@ public class PostFragment extends Fragment {
             }
         });
 
-        spnState.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (isFirst) {
-                    isFirst = false;
-                    return;
-                }
-                posts.clear();
-                progressDialog.show();
-                if (position == 0) {
-                    endLessScrollListener.resetData();
-                    state = "";
-                    database.getReference(nodeName).orderByKey().limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            progressDialog.dismiss();
-                            for (DataSnapshot child : dataSnapshot.getChildren()) {
-                                Log.d("xx", "onDataChange: " + child.getValue(Post.class).getId());
-                                posts.add(child.getValue(Post.class));
-                            }
-                            if (!posts.isEmpty()) {
-                                oldestId = String.valueOf(posts.get(posts.size() - 1).getId());
-                            }
-                            recyclerView.getAdapter().notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-                } else {
-                    state = states.get(position);
-                    Log.d("xxxx", "onItemSelected: " + state);
-                    queryPostByKey();
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
         endLessScrollListener = new EndLessScrollListener() {
             @Override
             public void seeMore() {
@@ -210,6 +210,36 @@ public class PostFragment extends Fragment {
         };
 
         recyclerView.addOnScrollListener(endLessScrollListener);
+
+        imgDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvSearch.setText("All");
+                posts.clear();
+                progressDialog.show();
+                endLessScrollListener.resetData();
+                state = "";
+                database.getReference(nodeName).orderByKey().limitToFirst(10).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        progressDialog.dismiss();
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                            Log.d("xx", "onDataChange: " + child.getValue(Post.class).getId());
+                            posts.add(child.getValue(Post.class));
+                        }
+                        if (!posts.isEmpty()) {
+                            oldestId = String.valueOf(posts.get(posts.size() - 1).getId());
+                        }
+                        recyclerView.getAdapter().notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
     }
 
 

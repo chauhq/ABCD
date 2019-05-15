@@ -239,33 +239,10 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
                                         public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                             progressDialog.dismiss();
                                             if (databaseError == null) {
-                                                database.getReference("city").child(state).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                    @Override
-                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                        if (!dataSnapshot.exists()) {
-                                                            database.getReference("city").child(state).setValue(new State((state))).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                @Override
-                                                                public void onComplete(@NonNull Task<Void> task) {
-                                                                    Intent intent = new Intent(CreatePostActivity.this, HomeActivity.class);
-                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                                    intent.putExtra("index", (user.isAccVip()) ? 2 : 1);
-                                                                    startActivity(intent);
-                                                                }
-                                                            });
-                                                        } else {
-                                                            Intent intent = new Intent(CreatePostActivity.this, HomeActivity.class);
-                                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                            intent.putExtra("index", (user.isAccVip()) ? 2 : 1);
-                                                            startActivity(intent);
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                        progressDialog.dismiss();
-                                                        Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
-                                                    }
-                                                });
+                                                Intent intent = new Intent(CreatePostActivity.this, HomeActivity.class);
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                intent.putExtra("index", (user.isAccVip()) ? 2 : 1);
+                                                startActivity(intent);
                                             } else {
                                                 progressDialog.dismiss();
                                                 Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
@@ -291,21 +268,6 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     intent.putExtra("index", 1);
                                     startActivity(intent);
-                                    database.getReference("city").child(state).addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            if (!dataSnapshot.exists()) {
-                                                database.getReference("city").child(state).setValue(new State((state)));
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                                            progressDialog.dismiss();
-                                            Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
-
-                                        }
-                                    });
                                 } else {
                                     progressDialog.dismiss();
                                     Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
@@ -352,21 +314,6 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
                                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                                     intent.putExtra("index", (user.isAccVip()) ? 2 : 1);
                                                     startActivity(intent);
-                                                    database.getReference("city").child(state).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                            if (!dataSnapshot.exists()) {
-                                                                database.getReference("city").child(state).setValue(new State((state)));
-                                                            }
-                                                        }
-
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                                                            progressDialog.dismiss();
-                                                            Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
-
-                                                        }
-                                                    });
                                                 } else {
                                                     progressDialog.dismiss();
                                                     Toast.makeText(CreatePostActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();

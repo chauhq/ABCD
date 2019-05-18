@@ -62,7 +62,7 @@ public class SigupActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(),VerifyAccount.class);
                 intent.putExtra("phone",mPhone);
                 intent.putExtra("hoang1","2hkjdư");
-                intent.putExtra(User.class.getSimpleName(), user)
+                intent.putExtra(User.class.getSimpleName(), user);
                 startActivity(intent);
             }
         });

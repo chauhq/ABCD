@@ -1,8 +1,10 @@
 package com.team.abc.ui.register;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +20,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.team.abc.HomeActivity;
 import com.team.abc.R;
 import com.team.abc.model.User;
@@ -31,18 +37,26 @@ public class VerifyAccount extends AppCompatActivity {
     private FirebaseAuth mAuth;
     FirebaseDatabase database;
     private ProgressBar progressBar;
+    private User myUser;
+    ProgressDialog progressDialog;
 
 
     private EditText editText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify_account);
         Bundle extras = getIntent().getExtras();
         String value1 = extras.getString("phone");
+        myUser = (User) getIntent().getSerializableExtra(User.class.getSimpleName());
         mAuth = FirebaseAuth.getInstance();
         progressBar = findViewById(R.id.progressbar);
         editText = findViewById(R.id.editTextCode);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Loading ...");
+        progressDialog.setCanceledOnTouchOutside(false);
 
         sendVerificationCode(value1);
         findViewById(R.id.buttonSignIn).setOnClickListener(new View.OnClickListener() {
@@ -62,6 +76,7 @@ public class VerifyAccount extends AppCompatActivity {
         });
 
     }
+
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks
             mCallBack = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
 
@@ -86,6 +101,7 @@ public class VerifyAccount extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
     };
+
     private void sendVerificationCode(String number) {
         progressBar.setVisibility(View.VISIBLE);
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
@@ -97,50 +113,51 @@ public class VerifyAccount extends AppCompatActivity {
         );
 
     }
+
     private void verifyCode(String code) {
         PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
         signInWithCredential(credential);
     }
+
     private void signInWithCredential(PhoneAuthCredential credential) {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-
-                database.getReference("users").child(edtNumberPhone.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            progressDialog.dismiss();
-                            Toast.makeText(SigupActivity.this, "phone number is exists", Toast.LENGTH_LONG).show();
-                        } else {
-                            final User user = new User(edtNumberPhone.getText().toString(), edtUserName.getText().toString(), edtPassword.getText().toString(), false);
-                            DatabaseReference myRef = database.getReference("users").child(edtNumberPhone.getText().toString());
-                            myRef.setValue(user, new DatabaseReference.CompletionListener() {
-
+                            progressDialog.show();
+                            database.getReference("users").child(myUser.getMyPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
-                                public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-                                    progressDialog.dismiss();
-                                    if (databaseError == null) {
-                                        SharePrefUtil.setUser(getApplicationContext(), user);
-                                        Intent intent = new Intent(SigupActivity.this, HomeActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        startActivity(intent);
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        Toast.makeText(VerifyAccount.this, "phone number is exists", Toast.LENGTH_LONG).show();
                                     } else {
-                                        Toast.makeText(SigupActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                                        final User user = new User(myUser.getMyPhone(), myUser.getName(), myUser.getPassword(), false);
+                                        DatabaseReference myRef = database.getReference("users").child(myUser.getMyPhone());
+                                        myRef.setValue(user, new DatabaseReference.CompletionListener() {
+
+                                            @Override
+                                            public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+                                                progressDialog.dismiss();
+                                                if (databaseError == null) {
+                                                    SharePrefUtil.setUser(getApplicationContext(), user);
+                                                    Intent intent = new Intent(VerifyAccount.this, HomeActivity.class);
+                                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                    startActivity(intent);
+                                                } else {
+                                                    Toast.makeText(VerifyAccount.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                                                }
+                                            }
+                                        });
                                     }
                                 }
-                            });
-                        }
-                    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        progressDialog.dismiss();
-                        Toast.makeText(SigupActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(VerifyAccount.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            });
 
 
                         } else {

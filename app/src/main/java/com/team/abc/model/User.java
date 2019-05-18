@@ -1,5 +1,6 @@
 package com.team.abc.model;
 
+import android.os.Parcel;
 import android.os.Parcelable;
 
 public class User implements Parcelable {
@@ -18,6 +19,25 @@ public class User implements Parcelable {
         this.password = pass;
         this.isAccVip = isAccVip;
     }
+
+    protected User(Parcel in) {
+        myPhone = in.readString();
+        name = in.readString();
+        password = in.readString();
+        isAccVip = in.readByte() != 0;
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 
     public String getName() {
         return name;
@@ -49,5 +69,18 @@ public class User implements Parcelable {
 
     public void setAccVip(boolean accVip) {
         isAccVip = accVip;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(myPhone);
+        dest.writeString(name);
+        dest.writeString(password);
+        dest.writeByte((byte) (isAccVip ? 1 : 0));
     }
 }

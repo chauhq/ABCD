@@ -166,23 +166,27 @@ public class ProfileFragment extends Fragment {
                 billingClient.startConnection(new BillingClientStateListener() {
                     @Override
                     public void onBillingSetupFinished(@BillingClient.BillingResponse int billingResponseCode) {
+                        Log.d("fdfdf",billingResponseCode+"");
                         if (billingResponseCode == BillingClient.BillingResponse.OK) {
                             List<String> skuList = new ArrayList<>();
-                            // skuList.add("abcd1");
-                            // test
-                            skuList.add("android.test.purchased");
+                             skuList.add("account1");
+
+                            // dong skulist.add("android.test.purchase")
+                           // skuList.add("android.test.purchased");
                             SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
                             params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
                             billingClient.querySkuDetailsAsync(params.build(),
                                     new SkuDetailsResponseListener() {
                                         @Override
                                         public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {
+                                            Log.d("fdsffs",skuDetailsList.size()+"");
                                             // Process the result.
                                             progressDialog.dismiss();
                                             if (skuDetailsList != null && !skuDetailsList.isEmpty()) {
                                                 BillingFlowParams flowParams = BillingFlowParams.newBuilder()
                                                         .setSkuDetails(skuDetailsList.get(0))
                                                         .build();
+                                                Log.d("fđf",skuDetailsList.get(0).getDescription()+"");
                                                 billingClient.launchBillingFlow(getActivity(), flowParams);
                                             }
                                         }
@@ -202,6 +206,7 @@ public class ProfileFragment extends Fragment {
         billingClient = BillingClient.newBuilder(getActivity()).setListener(new PurchasesUpdatedListener() {
             @Override
             public void onPurchasesUpdated(int responseCode, @Nullable List<Purchase> purchases) {
+                Log.d("fdfdf",responseCode+"");
                 if (responseCode == BillingClient.BillingResponse.OK && purchases != null) {
                     database.getReference("users").child(user.getMyPhone()).child("accVip").setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override

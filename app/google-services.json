@@ -1,42 +1,42 @@
 {
   "project_info": {
-    "project_number": "892051579840",
-    "firebase_url": "https://abcd-a6f69.firebaseio.com",
-    "project_id": "abcd-a6f69",
-    "storage_bucket": "abcd-a6f69.appspot.com"
+    "project_number": "1087111979483",
+    "firebase_url": "https://quan-ly-bds.firebaseio.com",
+    "project_id": "quan-ly-bds",
+    "storage_bucket": "quan-ly-bds.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:892051579840:android:64586a52421f0e5d",
+        "mobilesdk_app_id": "1:1087111979483:android:bb73ebc6a1430b51",
         "android_client_info": {
           "package_name": "com.team.abc"
         }
       },
       "oauth_client": [
         {
-          "client_id": "892051579840-5dpg0eb28o6dgkqet535ncrm9tfb797e.apps.googleusercontent.com",
+          "client_id": "1087111979483-rqfpisqiupr0n4ilv91c0t3l35h0ldpl.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.team.abc",
-            "certificate_hash": "cc2165ad6e7fdb63547724a90762e8c99c96a4e2"
+            "certificate_hash": "ae4f436dad1bf3eef421f4221b464dbd7349f592"
           }
         },
         {
-          "client_id": "892051579840-ahrb52m1sj8objhjl7pc0u45762rcvla.apps.googleusercontent.com",
+          "client_id": "1087111979483-d1onn2esdosb6u1apnl5pftr85slhd4s.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDUg5Ducdg3LJ3Qmd94QjqLGsy4o0ZQJ64"
+          "current_key": "AIzaSyDG4feACO95SXUpdpSzqEWHY09syoYbSro"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "892051579840-ahrb52m1sj8objhjl7pc0u45762rcvla.apps.googleusercontent.com",
+              "client_id": "1087111979483-d1onn2esdosb6u1apnl5pftr85slhd4s.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

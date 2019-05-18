@@ -49,44 +49,21 @@ public class SigupActivity extends AppCompatActivity {
         btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (edtNumberPhone.getText().toString().isEmpty() || edtPassword.getText().toString().isEmpty() || edtConfirmPassword.getText().toString().isEmpty() || edtUserName.getText().toString().isEmpty()) {
+                if (edtNumberPhone.getText().toString().isEmpty()  ) {
                     Toast.makeText(SigupActivity.this, "Please fill all information", Toast.LENGTH_LONG).show();
                     return;
                 }
-                progressDialog.show();
-                database.getReference("users").child(edtNumberPhone.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            progressDialog.dismiss();
-                            Toast.makeText(SigupActivity.this, "phone number is exists", Toast.LENGTH_LONG).show();
-                        } else {
-                            final User user = new User(edtNumberPhone.getText().toString(), edtUserName.getText().toString(), edtPassword.getText().toString(), false);
-                            DatabaseReference myRef = database.getReference("users").child(edtNumberPhone.getText().toString());
-                            myRef.setValue(user, new DatabaseReference.CompletionListener() {
 
-                                @Override
-                                public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-                                    progressDialog.dismiss();
-                                    if (databaseError == null) {
-                                        SharePrefUtil.setUser(getApplicationContext(), user);
-                                        Intent intent = new Intent(SigupActivity.this, HomeActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        startActivity(intent);
-                                    } else {
-                                        Toast.makeText(SigupActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        progressDialog.dismiss();
-                        Toast.makeText(SigupActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+                User user = new User();
+                user.setMyPhone(edtNumberPhone.getText().toString());
+                user.setPassword(edtPassword.getText().toString());
+                String phone = edtNumberPhone.getText().toString();
+                String mPhone = "+84" + phone.substring(1);
+                Intent intent = new Intent(getApplicationContext(),VerifyAccount.class);
+                intent.putExtra("phone",mPhone);
+                intent.putExtra("hoang1","2hkjdư");
+                intent.putExtra(User.class.getSimpleName(), user)
+                startActivity(intent);
             }
         });
     }

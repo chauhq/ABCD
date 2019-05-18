@@ -1,6 +1,8 @@
 package com.team.abc.model;
 
-public class User {
+import android.os.Parcelable;
+
+public class User implements Parcelable {
     private String myPhone;
     private String name;
     private String password;

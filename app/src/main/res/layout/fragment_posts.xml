@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#26A2A2A2"
+    android:background="@drawable/ic_backgroundsugup"
+
     android:orientation="vertical">
 
     <RelativeLayout
@@ -18,7 +19,7 @@
             android:layout_height="50dp"
             android:layout_marginLeft="15dp"
             android:gravity="center_vertical"
-            android:text="Post"
+
             android:textColor="@android:color/black"
             android:textSize="18dp" />
 
@@ -50,7 +51,7 @@
                 android:drawablePadding="10dp"
                 android:gravity="center_vertical"
                 android:paddingLeft="5dp"
-                android:text="All"
+
                 android:textColor="@android:color/black"
                 android:textSize="14dp" />
 

@@ -141,7 +141,7 @@ public class ProfileFragment extends Fragment {
                     user = null;
                     SharePrefUtil.clearUser(getActivity());
                     tvUserName.setText("No User");
-                    tvLogin.setText("LogIn");
+                    tvLogin.setText("ĐĂNG NHẬP");
                     for (int i = 0; i < viewPager.getAdapter().getCount(); i++) {
                         Fragment fragment = (Fragment) viewPager.getAdapter().instantiateItem(viewPager, i);
                         if (fragment instanceof NormalPostFragment) {
@@ -166,7 +166,7 @@ public class ProfileFragment extends Fragment {
                 billingClient.startConnection(new BillingClientStateListener() {
                     @Override
                     public void onBillingSetupFinished(@BillingClient.BillingResponse int billingResponseCode) {
-                        Log.d("fdfdf",billingResponseCode+"");
+
                         if (billingResponseCode == BillingClient.BillingResponse.OK) {
                             List<String> skuList = new ArrayList<>();
                              skuList.add("account1");
@@ -179,14 +179,14 @@ public class ProfileFragment extends Fragment {
                                     new SkuDetailsResponseListener() {
                                         @Override
                                         public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {
-                                            Log.d("fdsffs",skuDetailsList.size()+"");
+
                                             // Process the result.
                                             progressDialog.dismiss();
                                             if (skuDetailsList != null && !skuDetailsList.isEmpty()) {
                                                 BillingFlowParams flowParams = BillingFlowParams.newBuilder()
                                                         .setSkuDetails(skuDetailsList.get(0))
                                                         .build();
-                                                Log.d("fđf",skuDetailsList.get(0).getDescription()+"");
+
                                                 billingClient.launchBillingFlow(getActivity(), flowParams);
                                             }
                                         }
@@ -206,7 +206,7 @@ public class ProfileFragment extends Fragment {
         billingClient = BillingClient.newBuilder(getActivity()).setListener(new PurchasesUpdatedListener() {
             @Override
             public void onPurchasesUpdated(int responseCode, @Nullable List<Purchase> purchases) {
-                Log.d("fdfdf",responseCode+"");
+
                 if (responseCode == BillingClient.BillingResponse.OK && purchases != null) {
                     database.getReference("users").child(user.getMyPhone()).child("accVip").setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -256,7 +256,7 @@ public class ProfileFragment extends Fragment {
         @Nullable
         @Override
         public CharSequence getPageTitle(int position) {
-            return (position == 0) ? "Normal Post" : "Featured Post";
+            return (position == 0) ? "Bài đăng bình thường" : "Bài đăng đề xuất";
         }
     }
 }

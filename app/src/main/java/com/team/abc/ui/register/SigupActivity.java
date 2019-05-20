@@ -61,7 +61,7 @@ public class SigupActivity extends AppCompatActivity {
                 String mPhone = "+84" + phone.substring(1);
                 Intent intent = new Intent(getApplicationContext(),VerifyAccount.class);
                 intent.putExtra("phone",mPhone);
-                intent.putExtra("hoang1","2hkjdư");
+
                 intent.putExtra(User.class.getSimpleName(), user);
                 startActivity(intent);
             }

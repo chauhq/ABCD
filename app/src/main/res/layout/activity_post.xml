@@ -1,16 +1,18 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+
     android:fitsSystemWindows="true"
+    android:background="@drawable/ic_backgroundsugup"
     android:orientation="vertical">
 
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
+
         android:fitsSystemWindows="true"
+        android:gravity="center"
         android:orientation="vertical">
 
         <TextView
@@ -18,7 +20,7 @@
             android:layout_height="50dp"
             android:background="@color/colorAccent"
             android:gravity="center"
-            android:text="Post"
+            android:text="ĐĂNG BÀI VIẾT"
             android:textColor="@android:color/black"
             android:textSize="18dp" />
 
@@ -37,7 +39,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
+            android:layout_marginLeft="25dp"
             android:layout_marginTop="15dp"
+            android:layout_marginRight="25dp"
             android:background="@android:color/white"
             android:orientation="horizontal">
 
@@ -47,7 +52,7 @@
                 android:layout_weight="1.5"
                 android:gravity="center_vertical"
                 android:paddingLeft="5dp"
-                android:text="Phone Number"
+                android:text="Số điện thoại"
                 android:textColor="@android:color/black" />
 
             <EditText
@@ -55,7 +60,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
-                android:hint="Enter Phone Number"
+                android:hint="Nhập số điện thoại"
                 android:inputType="number"
                 android:paddingLeft="10dp"
                 android:textColor="@android:color/black"
@@ -67,6 +72,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
+            android:layout_marginLeft="25dp"
+
+            android:layout_marginRight="25dp"
             android:background="@android:color/white"
             android:orientation="horizontal">
 
@@ -76,7 +84,7 @@
                 android:layout_weight="1.5"
                 android:gravity="center_vertical"
                 android:paddingLeft="5dp"
-                android:text="Description"
+                android:text="Thông tin"
                 android:textColor="@android:color/black" />
 
             <EditText
@@ -84,7 +92,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
-                android:hint="Enter description"
+                android:hint="Nhập thông tin dự án, lô đất"
                 android:lines="5"
                 android:maxLines="5"
                 android:paddingLeft="10dp"
@@ -95,7 +103,11 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
             android:layout_marginTop="15dp"
+            android:layout_marginLeft="25dp"
+
+            android:layout_marginRight="25dp"
             android:background="@android:color/white"
             android:orientation="horizontal">
 
@@ -105,7 +117,7 @@
                 android:layout_weight="1.5"
                 android:gravity="center_vertical"
                 android:paddingLeft="5dp"
-                android:text="Price"
+                android:text="Giá cả"
                 android:textColor="@android:color/black" />
 
             <EditText
@@ -113,7 +125,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
-                android:hint="Enter Phone Number"
+                android:hint="Nhập giá cả"
                 android:inputType="number"
                 android:paddingLeft="10dp"
                 android:textColor="@android:color/black"
@@ -142,7 +154,7 @@
                 android:background="@android:color/white"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:text="Pick up a Pickture?    Click here."
+                android:text="Chọn ảnh?    Tại đây."
                 android:textColor="@android:color/black" />
         </RelativeLayout>
 
@@ -163,6 +175,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginRight="40dp"
             android:layout_marginBottom="10dp"
-            android:text="Post" />
+            android:text="Đăng bài" />
+
     </LinearLayout>
 </ScrollView>

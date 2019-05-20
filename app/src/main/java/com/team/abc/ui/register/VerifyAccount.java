@@ -49,11 +49,12 @@ public class VerifyAccount extends AppCompatActivity {
         setContentView(R.layout.activity_verify_account);
         Bundle extras = getIntent().getExtras();
         String value1 = extras.getString("phone");
+
         myUser = (User) getIntent().getSerializableExtra(User.class.getSimpleName());
         mAuth = FirebaseAuth.getInstance();
         progressBar = findViewById(R.id.progressbar);
         editText = findViewById(R.id.editTextCode);
-
+        database = FirebaseDatabase.getInstance();
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loading ...");
         progressDialog.setCanceledOnTouchOutside(false);
@@ -84,7 +85,6 @@ public class VerifyAccount extends AppCompatActivity {
         public void onCodeSent(String s, PhoneAuthProvider.ForceResendingToken forceResendingToken) {
             super.onCodeSent(s, forceResendingToken);
             verificationId = s;
-            Log.d("hihi", "onCodeSent:" + verificationId);
         }
 
         @Override

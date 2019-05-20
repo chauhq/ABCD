@@ -50,7 +50,7 @@ public class VerifyAccount extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         String value1 = extras.getString("phone");
 
-        myUser = (User) getIntent().getSerializableExtra(User.class.getSimpleName());
+        myUser = (User) getIntent().getParcelableExtra(User.class.getSimpleName());
         mAuth = FirebaseAuth.getInstance();
         progressBar = findViewById(R.id.progressbar);
         editText = findViewById(R.id.editTextCode);

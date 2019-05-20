@@ -53,17 +53,33 @@ public class SigupActivity extends AppCompatActivity {
                     Toast.makeText(SigupActivity.this, "Please fill all information", Toast.LENGTH_LONG).show();
                     return;
                 }
+                progressDialog.show();
+                database.getReference("users").child(edtNumberPhone.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            progressDialog.dismiss();
+                            Toast.makeText(SigupActivity.this, "phone number is exists", Toast.LENGTH_LONG).show();
+                        } else {
+                            User user = new User();
+                            user.setMyPhone(edtNumberPhone.getText().toString());
+                            user.setPassword(edtPassword.getText().toString());
+                            String phone = edtNumberPhone.getText().toString();
+                            String mPhone = "+84" + phone.substring(1);
+                            Intent intent = new Intent(getApplicationContext(),VerifyAccount.class);
+                            intent.putExtra("phone",mPhone);
 
-                User user = new User();
-                user.setMyPhone(edtNumberPhone.getText().toString());
-                user.setPassword(edtPassword.getText().toString());
-                String phone = edtNumberPhone.getText().toString();
-                String mPhone = "+84" + phone.substring(1);
-                Intent intent = new Intent(getApplicationContext(),VerifyAccount.class);
-                intent.putExtra("phone",mPhone);
+                            intent.putExtra(User.class.getSimpleName(), user);
+                            startActivity(intent);
+                        }
+                    }
 
-                intent.putExtra(User.class.getSimpleName(), user);
-                startActivity(intent);
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        progressDialog.dismiss();
+                        Toast.makeText(SigupActivity.this, databaseError.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
     }

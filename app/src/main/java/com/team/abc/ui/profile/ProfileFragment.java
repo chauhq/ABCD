@@ -169,7 +169,7 @@ public class ProfileFragment extends Fragment {
 
                         if (billingResponseCode == BillingClient.BillingResponse.OK) {
                             List<String> skuList = new ArrayList<>();
-                             skuList.add("account1");
+                             skuList.add("demo2");
 
                             // dong skulist.add("android.test.purchase")
                            // skuList.add("android.test.purchased");
@@ -212,6 +212,10 @@ public class ProfileFragment extends Fragment {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
+                                user = SharePrefUtil.getUserLogged(getActivity());
+                                user.setAccVip(true);
+                                tvAcc.setVisibility(View.GONE);
+                                SharePrefUtil.setUser(getActivity(), user);
                                 tvAcc.setVisibility(View.GONE);
                                 for (int i = 0; i < viewPager.getAdapter().getCount(); i++) {
                                     Fragment fragment = (Fragment) viewPager.getAdapter().instantiateItem(viewPager, i);

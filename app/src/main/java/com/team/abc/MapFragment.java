@@ -150,7 +150,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         });
         listenerEvent();
 
-        database.getReference("posts").addListenerForSingleValueEvent(new ValueEventListener() {
+        database.getReference("suggestion").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
@@ -267,7 +267,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                                         }
                                     }
                                 }
-                                PolylineOptions opts = new PolylineOptions().addAll(paths).color(Color.BLUE).width(5);
+                                PolylineOptions opts = new PolylineOptions().addAll(paths).color(Color.RED).width(5);
                                 polyline = map.addPolyline(opts);
                                 map.getUiSettings().setZoomControlsEnabled(true);
 

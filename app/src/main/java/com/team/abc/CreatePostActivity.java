@@ -89,6 +89,7 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
+
         storage = FirebaseStorage.getInstance();
         database = FirebaseDatabase.getInstance();
         storageRef = storage.getReference();
@@ -96,7 +97,9 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
         imageView = findViewById(R.id.imgLand);
+
         rlPick = findViewById(R.id.rlPick);
         btnPost = findViewById(R.id.btnPost);
         edtPhoneNumber = findViewById(R.id.edtPhoneNumber);
@@ -129,6 +132,7 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
         autocompleteFragment.setOnPlaceSelectedListener(new com.google.android.libraries.places.widget.listener.PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull com.google.android.libraries.places.api.model.Place place) {
+
                 if (place.getLatLng() == null) {
                     return;
                 }
@@ -153,7 +157,7 @@ public class CreatePostActivity extends AppCompatActivity implements OnMapReadyC
 
                     @Override
                     public void onFailure(Call<GeoResponse> call, Throwable t) {
-                        Log.d("xxx", "onFailure: ");
+
 
                     }
                 });

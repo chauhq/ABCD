@@ -51,10 +51,12 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
                 progressDialog.show();
+
                 database.getReference("users").child(edtPhoneNumber.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         progressDialog.dismiss();
+                        //chuyen doi js -> minh acn su dung doi tuong
                         if (dataSnapshot.exists()) {
                             User user = dataSnapshot.getValue(User.class);
                             if (user != null) {

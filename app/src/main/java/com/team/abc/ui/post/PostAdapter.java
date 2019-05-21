@@ -24,12 +24,14 @@ import java.util.Locale;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
     List<Post> posts;
+    boolean check ;
 
 
-    public PostAdapter(List<Post> posts, Context context) {
+    public PostAdapter(List<Post> posts, Context context, boolean check) {
         this.posts = posts;
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        this.check = check;
     }
 
     @NonNull
@@ -86,7 +88,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    DetailPostActivity.startDetailPostActivity(itemView.getContext(), String.valueOf(post.getId()));
+                    DetailPostActivity.startDetailPostActivity(itemView.getContext(), String.valueOf(post.getId()),check );
                 }
             });
         }

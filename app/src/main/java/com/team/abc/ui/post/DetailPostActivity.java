@@ -26,6 +26,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.team.abc.model.User;
+import com.team.abc.ui.profile.SharePrefUtil;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -33,6 +35,7 @@ import java.util.Locale;
 
 public class DetailPostActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String POST_ID = "post_id";
+    private static final String CHECK = "check";
     private ImageView imageView;
     private TextView tvDes;
     private ImageView imgPhone;
@@ -43,9 +46,10 @@ public class DetailPostActivity extends AppCompatActivity implements OnMapReadyC
     private MapView mapView;
 
 
-    public static void startDetailPostActivity(Context context, String id) {
+    public static void startDetailPostActivity(Context context, String id, boolean check) {
         Intent intent = new Intent(context, DetailPostActivity.class);
         intent.putExtra(POST_ID, id);
+        intent.putExtra(CHECK, check);
         context.startActivity(intent);
     }
 
@@ -64,8 +68,15 @@ public class DetailPostActivity extends AppCompatActivity implements OnMapReadyC
 
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
+        String nodeName;
+        User user = SharePrefUtil.getUserLogged(this);
+        if (getIntent().getBooleanExtra(CHECK, false) || (user != null && user.isAccVip())) {
+            nodeName = "suggestion";
+        } else {
+            nodeName = "posts";
+        }
 
-        database.getReference("posts").child(getIntent().getStringExtra(POST_ID)).addListenerForSingleValueEvent(new ValueEventListener() {
+        database.getReference(nodeName).child(getIntent().getStringExtra(POST_ID)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() == null) {

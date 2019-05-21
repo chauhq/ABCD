@@ -126,7 +126,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         tvDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DetailPostActivity.startDetailPostActivity(getActivity(), String.valueOf(posts.get(position).getId()));
+                DetailPostActivity.startDetailPostActivity(getActivity(), String.valueOf(posts.get(position).getId()), true);
             }
         });
 

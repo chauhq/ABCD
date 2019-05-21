@@ -51,9 +51,9 @@ public class HomeActivity extends AppCompatActivity {
             if (position == 0) {
                 return new MapFragment();
             } else if (position == 1) {
-                return PostFragment.newInstance(false);
+                return PostFragment.newInstance(false, false);
             } else if (position == 2) {
-                return PostFragment.newInstance(true);
+                return PostFragment.newInstance(true, true);
             } else {
                 return new ProfileFragment();
             }

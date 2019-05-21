@@ -68,9 +68,10 @@ public class PostFragment extends Fragment {
     private TextView tvSearch;
     private ImageView imgDelete;
 
-    public static PostFragment newInstance(boolean isAdmin) {
+    public static PostFragment newInstance(boolean isAdmin, boolean check) {
         Bundle bundle = new Bundle();
         bundle.putBoolean(IS_ACC_VIP, isAdmin);
+        bundle.putBoolean("check", check);
         PostFragment fragment = new PostFragment();
         fragment.setArguments(bundle);
         return fragment;
@@ -107,7 +108,7 @@ public class PostFragment extends Fragment {
         initListener();
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(new PostAdapter(posts, getActivity()));
+        recyclerView.setAdapter(new PostAdapter(posts, getActivity(), getArguments().getBoolean("check")));
 
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("Loading ...");
